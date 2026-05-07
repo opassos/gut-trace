@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.MonitorHeart
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,8 +25,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.guttrace.viewmodel.HomeViewModel
 
+import androidx.compose.ui.platform.LocalContext
+
 @Composable
 fun HomeScreen(navController: NavController, vm: HomeViewModel = viewModel()) {
+    val context = LocalContext.current
     val recentEvents by vm.recentEvents.collectAsState(initial = emptyList())
 
     Box(
@@ -45,17 +49,28 @@ fun HomeScreen(navController: NavController, vm: HomeViewModel = viewModel()) {
         ) {
             Spacer(Modifier.height(48.dp))
 
-            Text(
-                text = "GutTrace",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF7C83FD)
-            )
-            Text(
-                text = "diário intestinal",
-                fontSize = 14.sp,
-                color = Color(0xFF888899)
-            )
+            Box(Modifier.fillMaxWidth()) {
+                Column(Modifier.align(Alignment.Center)) {
+                    Text(
+                        text = "GutTrace",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF7C83FD)
+                    )
+                    Text(
+                        text = "diário intestinal",
+                        fontSize = 14.sp,
+                        color = Color(0xFF888899),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+                IconButton(
+                    onClick = { navController.navigate("settings") },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Settings, contentDescription = "Configurações", tint = Color(0xFF888899))
+                }
+            }
 
             Spacer(Modifier.height(52.dp))
 
@@ -83,13 +98,21 @@ fun HomeScreen(navController: NavController, vm: HomeViewModel = viewModel()) {
 
             // Recent events
             if (recentEvents.isNotEmpty()) {
-                Text(
-                    "Recentes",
-                    color = Color(0xFF888899),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.align(Alignment.Start)
-                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "Recentes",
+                        color = Color(0xFF888899),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        "Forçar Sync",
+                        color = Color(0xFF7C83FD),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable { vm.forceSync(context) }
+                    )
+                }
                 Spacer(Modifier.height(8.dp))
                 recentEvents.take(5).forEach { event ->
                     EventRowCard(event.type, event.localDatetime, event.syncStatus)

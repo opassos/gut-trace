@@ -15,11 +15,11 @@ import java.net.URL
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
-    // TODO: Replace with your Mac/server local IP on the same Wi-Fi network.
-    // Example: "http://192.168.1.100:8000/sync/events"
-    private val serverUrl = "http://YOUR_SERVER_IP:8000/sync/events"
-
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        val prefs = applicationContext.getSharedPreferences("gut_prefs", Context.MODE_PRIVATE)
+        val serverIp = prefs.getString("server_ip", "10.0.2.2") ?: "10.0.2.2"
+        val dynamicServerUrl = "http://$serverIp:8000/sync/events"
+
         val database = AppDatabase.getDatabase(applicationContext)
         val dao = database.eventDao()
         val pendingEvents = dao.getPendingEvents()
@@ -39,7 +39,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
                 idsToMark.add(event.id)
             }
 
-            val url = URL(serverUrl)
+            val url = URL(dynamicServerUrl)
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
