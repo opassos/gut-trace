@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Trigger Explorer</h1>
+<p>Analyze the correlation between meal tags and recorded symptoms.</p>
+
+<div class="card">
+    <h3>Most Frequent Meal Tags</h3>
+    <p>Overview of the top tags you use during meals.</p>
+    <ul>
+        {% for tag, count in top_tags.items() %}
+        <li><strong>{{ tag }}</strong>: {{ count }} meals</li>
+        {% endfor %}
+        {% if not top_tags %}
+        <li>No tags recorded yet.</li>
+        {% endif %}
+    </ul>
+</div>
+
+<div class="card">
+    <h3>Coming Soon</h3>
+    <p>Future versions will show direct correlations here (e.g., "Meals with 'lactose' correlate with +35% bloating within 4 hours").</p>
+</div>
+
+{% endblock %}

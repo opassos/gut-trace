@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .event-time { color: #666; font-size: 0.9em; margin-bottom: 8px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .tag { background: #e0e0e0; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; }
+    img { max-width: 100%; border-radius: 8px; margin-top: 8px; }
+    .symptoms { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 8px; }
+    .symptom { background: #ffebee; color: #c62828; padding: 8px; border-radius: 4px; text-align: center; font-weight: bold; }
+</style>
+
+<h1>Timeline</h1>
+
+{% for event in events %}
+<div class="card">
+    <div class="event-time">{{ event.local_datetime }}</div>
+    
+    {% if event.type == 'meal' %}
+        <h3>🍽️ Meal</h3>
+        {% if event.photo_ids %}
+            {% for photo_id in event.photo_ids %}
+                <img src="/photos/{{ photo_id }}.jpg" alt="Meal Photo" onerror="this.style.display='none'">
+            {% endfor %}
+        {% endif %}
+        <div class="tags">
+            {% for tag in event.tags %}
+                <span class="tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+    {% elif event.type == 'symptom' %}
+        <h3>🤢 Symptoms</h3>
+        <div class="symptoms">
+            {% if event.upper_bloating_score %}<div class="symptom">Bloating: {{ event.upper_bloating_score }}/5</div>{% endif %}
+            {% if event.nausea_score %}<div class="symptom">Nausea: {{ event.nausea_score }}/5</div>{% endif %}
+            {% if event.belching_score %}<div class="symptom">Belching: {{ event.belching_score }}/5</div>{% endif %}
+            {% if event.heartburn_score %}<div class="symptom">Heartburn: {{ event.heartburn_score }}/5</div>{% endif %}
+        </div>
+    {% else %}
+        <h3>{{ event.type }}</h3>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% if not events %}
+<div class="card">
+    <p>No events recorded yet. Sync from the Android app to see data here.</p>
+</div>
+{% endif %}
+
+{% endblock %}

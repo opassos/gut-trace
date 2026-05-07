@@ -1,0 +1,32 @@
+# ─── Python / Server ──────────────────────────────────────────────────────────
+server/venv/
+server/__pycache__/
+server/*.pyc
+server/data/guttrace.db
+server/data/photos/
+*.db
+*.sqlite
+
+# ─── Android / Gradle ─────────────────────────────────────────────────────────
+android-source/.gradle/
+android-source/local.properties
+android-source/app/build/
+android-source/build/
+android-source/**/*.apk
+android-source/**/*.aab
+android-source/**/*.ap_
+android-source/**/*.hprof
+android-source/.idea/
+android-source/*.iml
+android-source/captures/
+
+# ─── macOS ────────────────────────────────────────────────────────────────────
+.DS_Store
+**/.DS_Store
+
+# ─── Personal data ────────────────────────────────────────────────────────────
+# Never commit real meal photos or symptom data
+data/
+*.jpg
+*.jpeg
+*.png

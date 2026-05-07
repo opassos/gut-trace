@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: center; font-size: 0.95em; }
+    th { background: #f8f9fa; font-weight: 600; }
+    .score-0 { background: white; }
+    .score-1 { background: #fff9c4; } 
+    .score-2 { background: #ffe082; }
+    .score-3 { background: #ffb74d; }
+    .score-4 { background: #ef5350; color: white; font-weight: bold; }
+    .score-5 { background: #b71c1c; color: white; font-weight: bold; }
+</style>
+
+<h1>Symptom Heatmap</h1>
+<p>Max symptom score recorded per 3-hour window.</p>
+
+<div style="overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                {% for label in window_labels %}
+                <th>{{ label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td><strong>{{ row.day }}</strong></td>
+                {% for score in row.windows %}
+                    <td class="score-{{ score }}">{{ score if score > 0 else '-' }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            {% if not rows %}
+            <tr>
+                <td colspan="9">No symptom data available yet.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+    <h3>Legend (Severity)</h3>
+    <div style="display: flex; gap: 10px;">
+        <span style="padding: 5px 10px; border: 1px solid #ddd;" class="score-0">0 (None)</span>
+        <span style="padding: 5px 10px; border: 1px solid #ddd;" class="score-1">1 (Minimal)</span>
+        <span style="padding: 5px 10px; border: 1px solid #ddd;" class="score-2">2 (Mild)</span>
+        <span style="padding: 5px 10px; border: 1px solid #ddd;" class="score-3">3 (Moderate)</span>
+        <span style="padding: 5px 10px; border: 1px solid #ddd;" class="score-4">4 (Bad)</span>
+        <span style="padding: 5px 10px; border: 1px solid #ddd;" class="score-5">5 (Severe)</span>
+    </div>
+</div>
+{% endblock %}
