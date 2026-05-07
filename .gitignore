@@ -30,3 +30,4 @@ data/
 *.jpg
 *.jpeg
 *.png
+server.log
