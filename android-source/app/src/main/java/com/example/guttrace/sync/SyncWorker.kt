@@ -31,12 +31,27 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
         try {
             val jsonArray = JSONArray()
             val idsToMark = mutableListOf<String>()
+            var allPhotosUploaded = true
 
             for (event in pendingEvents) {
+                val photoFile = java.io.File(applicationContext.filesDir, "${event.id}.jpg")
+                if (photoFile.exists()) {
+                    if (!uploadPhoto(photoFile, event.id, serverIp)) {
+                        allPhotosUploaded = false
+                        continue // Skip syncing JSON if photo failed
+                    } else {
+                        photoFile.delete() // Cleanup
+                    }
+                }
+                
                 val jsonObj = JSONObject(event.payloadJson)
                 jsonObj.put("id", event.id)
                 jsonArray.put(jsonObj)
                 idsToMark.add(event.id)
+            }
+
+            if (jsonArray.length() == 0) {
+                return@withContext if (allPhotosUploaded) Result.success() else Result.retry()
             }
 
             val url = URL(dynamicServerUrl)
@@ -58,6 +73,41 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
         } catch (e: Exception) {
             e.printStackTrace()
             Result.retry()
+        }
+    }
+
+    private fun uploadPhoto(photoFile: java.io.File, photoId: String, serverIp: String): Boolean {
+        if (!photoFile.exists()) return true
+        
+        val boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+        val url = java.net.URL("http://$serverIp:8000/sync/photos")
+        val connection = url.openConnection() as java.net.HttpURLConnection
+        
+        try {
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+            
+            val outputStream = java.io.DataOutputStream(connection.outputStream)
+            
+            outputStream.writeBytes("--$boundary\r\n")
+            outputStream.writeBytes("Content-Disposition: form-data; name=\"photo_id\"\r\n\r\n")
+            outputStream.writeBytes("$photoId\r\n")
+            
+            outputStream.writeBytes("--$boundary\r\n")
+            outputStream.writeBytes("Content-Disposition: form-data; name=\"file\"; filename=\"$photoId.jpg\"\r\n")
+            outputStream.writeBytes("Content-Type: image/jpeg\r\n\r\n")
+            
+            photoFile.inputStream().use { it.copyTo(outputStream) }
+            
+            outputStream.writeBytes("\r\n--$boundary--\r\n")
+            outputStream.flush()
+            outputStream.close()
+            
+            return connection.responseCode == 200
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
         }
     }
 }

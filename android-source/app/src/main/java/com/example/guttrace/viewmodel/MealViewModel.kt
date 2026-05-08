@@ -34,6 +34,12 @@ class MealViewModel(application: Application) : AndroidViewModel(application) {
                 put("tags", org.json.JSONArray(tags))
                 put("notes", "")
                 put("meal_type_inferred", inferMealType(now.hour))
+                
+                if (photoFile != null && photoFile.exists()) {
+                    val finalFile = File(context.filesDir, "${id}.jpg")
+                    photoFile.copyTo(finalFile, overwrite = true)
+                    put("photo_ids", org.json.JSONArray(listOf(id)))
+                }
             }
 
             val event = EventEntity(
@@ -47,8 +53,6 @@ class MealViewModel(application: Application) : AndroidViewModel(application) {
 
             dao.insertEvent(event)
             scheduleSyncIfNeeded(context)
-
-            // TODO: Upload photo separately via /sync/photos if photoFile != null
         }
     }
 

@@ -11,8 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.guttrace.ui.BowelScreen
 import com.example.guttrace.ui.HomeScreen
 import com.example.guttrace.ui.MealLogScreen
+import com.example.guttrace.ui.MedicationScreen
 import com.example.guttrace.ui.SettingsScreen
 import com.example.guttrace.ui.SymptomScreen
 import com.example.guttrace.ui.theme.GutTraceTheme
@@ -40,6 +42,8 @@ fun GutTraceApp() {
         composable("home") { HomeScreen(navController) }
         composable("meal_log") { MealLogScreen(navController) }
         composable("symptom") { SymptomScreen(navController) }
+        composable("medication") { MedicationScreen(navController) }
+        composable("bowel") { BowelScreen(navController) }
         composable("settings") { SettingsScreen(navController) }
     }
 }

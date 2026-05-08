@@ -3,16 +3,23 @@ package com.example.guttrace.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.MonitorHeart
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.guttrace.data.EventEntity
 import com.example.guttrace.viewmodel.HomeViewModel
 
 import androidx.compose.ui.platform.LocalContext
@@ -44,6 +52,7 @@ fun HomeScreen(navController: NavController, vm: HomeViewModel = viewModel()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -85,14 +94,36 @@ fun HomeScreen(navController: NavController, vm: HomeViewModel = viewModel()) {
 
             Spacer(Modifier.height(20.dp))
 
-            // Secondary: Symptoms
-            BigActionButton(
-                icon = Icons.Default.MonitorHeart,
-                label = "Como estou agora?",
-                sublabel = "registrar sintomas",
-                gradientColors = listOf(Color(0xFFFF6B6B), Color(0xFFEE0979)),
-                onClick = { navController.navigate("symptom") }
-            )
+            // Secondary Actions
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.weight(1f)) {
+                    BigActionButton(
+                        icon = Icons.Default.MonitorHeart,
+                        label = "Sintomas",
+                        sublabel = "agora",
+                        gradientColors = listOf(Color(0xFFFF6B6B), Color(0xFFEE0979)),
+                        onClick = { navController.navigate("symptom") }
+                    )
+                }
+                Box(Modifier.weight(1f)) {
+                    BigActionButton(
+                        icon = Icons.Default.Medication,
+                        label = "Remédio",
+                        sublabel = "intake",
+                        gradientColors = listOf(Color(0xFF4DB6AC), Color(0xFF00897B)),
+                        onClick = { navController.navigate("medication") }
+                    )
+                }
+                Box(Modifier.weight(1f)) {
+                    BigActionButton(
+                        icon = Icons.Default.WaterDrop,
+                        label = "Banheiro",
+                        sublabel = "bristol",
+                        gradientColors = listOf(Color(0xFF8D6E63), Color(0xFF5D4037)),
+                        onClick = { navController.navigate("bowel") }
+                    )
+                }
+            }
 
             Spacer(Modifier.height(40.dp))
 
@@ -114,8 +145,10 @@ fun HomeScreen(navController: NavController, vm: HomeViewModel = viewModel()) {
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                recentEvents.take(5).forEach { event ->
-                    EventRowCard(event.type, event.localDatetime, event.syncStatus)
+                recentEvents.take(100).forEach { event ->
+                    EventRowCard(event) {
+                        vm.deleteEvent(event, context)
+                    }
                     Spacer(Modifier.height(6.dp))
                 }
             }
@@ -136,33 +169,45 @@ fun BigActionButton(
             .fillMaxWidth()
             .height(90.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(Brush.horizontalGradient(gradientColors))
+            .background(Brush.verticalGradient(gradientColors))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Icon(icon, contentDescription = label, tint = Color.White, modifier = Modifier.size(36.dp))
-            Spacer(Modifier.width(16.dp))
-            Column {
-                Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text(sublabel, color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)
-            }
+            Icon(icon, contentDescription = label, tint = Color.White, modifier = Modifier.size(28.dp))
+            Spacer(Modifier.height(6.dp))
+            Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(sublabel, color = Color.White.copy(alpha = 0.75f), fontSize = 10.sp)
         }
     }
 }
 
 @Composable
-fun EventRowCard(type: String, timestamp: String, syncStatus: String) {
-    val emoji = if (type == "meal") "🍽️" else "🫀"
-    val typeLabel = if (type == "meal") "Refeição" else "Sintomas"
-    val time = timestamp.takeLast(14).take(5) // HH:mm
-    val synced = syncStatus == "synced"
+fun EventRowCard(event: EventEntity, onDelete: () -> Unit) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val emoji = when (event.type) {
+        "meal" -> "🍽️"
+        "symptom" -> "🫀"
+        "medication" -> "💊"
+        "bowel" -> "💩"
+        else -> "❓"
+    }
+    val typeLabel = when (event.type) {
+        "meal" -> "Refeição"
+        "symptom" -> "Sintomas"
+        "medication" -> "Remédio"
+        "bowel" -> "Evacuação"
+        else -> "Evento"
+    }
+    val time = event.localDatetime.takeLast(14).take(5) // HH:mm
+    val synced = event.syncStatus == "synced"
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { showDeleteDialog = true },
         shape = RoundedCornerShape(12.dp),
         color = Color(0xFF1E1E35)
     ) {
@@ -183,5 +228,22 @@ fun EventRowCard(type: String, timestamp: String, syncStatus: String) {
                     .background(if (synced) Color(0xFF4CAF50) else Color(0xFFFF9800))
             )
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Excluir Evento") },
+            text = { Text("Tem certeza que deseja apagar este $typeLabel?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDelete()
+                    showDeleteDialog = false
+                }) { Text("Excluir", color = Color(0xFFFF6B6B)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
+            }
+        )
     }
 }

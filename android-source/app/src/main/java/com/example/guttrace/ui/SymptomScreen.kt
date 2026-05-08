@@ -167,26 +167,32 @@ fun SymptomScreen(navController: NavController, vm: SymptomViewModel = viewModel
 
 @Composable
 fun SymptomSlider(label: String, value: Int, onValueChange: (Int) -> Unit) {
-    Column(Modifier.padding(vertical = 4.dp)) {
+    Column(Modifier.padding(vertical = 8.dp)) {
+        Text(label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(8.dp))
         Row(
             Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(label, color = Color.White, fontSize = 14.sp)
-            Text("$value/5", color = Color(0xFF7C83FD), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            (0..5).forEach { i ->
+                val selected = value == i
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(if (selected) Color(0xFF7C83FD) else Color(0xFF1E1E35))
+                        .clickable { onValueChange(i) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = i.toString(),
+                        color = if (selected) Color.White else Color(0xFF888899),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            }
         }
-        Slider(
-            value = value.toFloat(),
-            onValueChange = { onValueChange(it.toInt()) },
-            valueRange = 0f..5f,
-            steps = 4,
-            colors = SliderDefaults.colors(
-                thumbColor = Color(0xFF7C83FD),
-                activeTrackColor = Color(0xFF7C83FD),
-                inactiveTrackColor = Color(0xFF2A2A45)
-            )
-        )
     }
 }
 

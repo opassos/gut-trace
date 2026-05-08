@@ -87,6 +87,18 @@ async def dashboard():
                 if v:
                     syms.append(f'<span class="symptom">{label}: {html.escape(str(v))}/5</span>')
             cards += f'<div class="card"><div class="event-time">{t}</div><h3>🤢 Symptoms</h3>{"".join(syms)}</div>'
+        elif etype == "medication":
+            med = event.get("medication", "Unknown")
+            alias = event.get("alias", "")
+            disp = f"{med} ({alias})" if alias else med
+            cards += f'<div class="card"><div class="event-time">{t}</div><h3>💊 Medication</h3><div><span class="tag" style="background:#e3f2fd;color:#1565c0;font-weight:bold;font-size:1em;padding:6px 10px">{html.escape(disp)}</span></div></div>'
+        elif etype == "deleted":
+            continue
+        elif etype == "bowel":
+            scale = event.get("bristol_scale", "?")
+            notes = event.get("notes", "")
+            notes_html = f'<div style="margin-top:4px;font-size:0.9em;color:#666">{html.escape(notes)}</div>' if notes else ""
+            cards += f'<div class="card"><div class="event-time">{t}</div><h3>💩 Bowel Movement</h3><div><span class="tag" style="background:#8d6e63;color:white;font-weight:bold">Bristol Scale: {scale}</span></div>{notes_html}</div>'
         else:
             cards += f'<div class="card"><div class="event-time">{t}</div><h3>{html.escape(etype)}</h3></div>'
 
