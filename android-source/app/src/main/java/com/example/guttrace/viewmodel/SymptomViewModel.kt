@@ -26,17 +26,21 @@ class SymptomViewModel(application: Application) : AndroidViewModel(application)
         bloating: Int,
         nausea: Int,
         belching: Int,
-        heartburn: Int
+        heartburn: Int,
+        eventTime: LocalDateTime? = null
     ) {
         viewModelScope.launch {
-            val now = LocalDateTime.now()
-            val isoNow = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val createdTime = LocalDateTime.now()
+            val actualTime = eventTime ?: createdTime
+            
+            val isoCreated = createdTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val isoEvent = actualTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             val id = UUID.randomUUID().toString().take(8)
 
             val payload = JSONObject().apply {
                 put("type", "symptom")
-                put("created_at_utc", isoNow)
-                put("local_datetime", isoNow)
+                put("created_at_utc", isoCreated)
+                put("local_datetime", isoEvent)
                 put("trigger_type", "manual")
                 put("global_score", globalScore)
                 put("upper_bloating_score", bloating)
@@ -48,8 +52,8 @@ class SymptomViewModel(application: Application) : AndroidViewModel(application)
             val event = EventEntity(
                 id = id,
                 type = "symptom",
-                createdAtUtc = isoNow,
-                localDatetime = isoNow,
+                createdAtUtc = isoCreated,
+                localDatetime = isoEvent,
                 payloadJson = payload.toString(),
                 syncStatus = "pending"
             )

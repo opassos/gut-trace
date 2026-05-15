@@ -43,6 +43,7 @@ fun BowelScreen(navController: NavController, vm: BowelViewModel = viewModel()) 
     var selectedScale by remember { mutableStateOf<Int?>(null) }
     var notes by remember { mutableStateOf("") }
     var saved by remember { mutableStateOf(false) }
+    var eventTime by remember { mutableStateOf(java.time.LocalDateTime.now()) }
 
     Box(
         modifier = Modifier
@@ -56,6 +57,13 @@ fun BowelScreen(navController: NavController, vm: BowelViewModel = viewModel()) 
                 }
                 Text("Evacuação (Escala de Bristol)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
             }
+            Spacer(Modifier.height(16.dp))
+            
+            DateTimeSelector(
+                selectedDateTime = eventTime,
+                onDateTimeSelected = { eventTime = it }
+            )
+            
             Spacer(Modifier.height(16.dp))
 
             Column(
@@ -111,7 +119,7 @@ fun BowelScreen(navController: NavController, vm: BowelViewModel = viewModel()) 
                 Button(
                     onClick = {
                         if (selectedScale != null) {
-                            vm.saveBowelMovement(context, selectedScale!!, notes.trim())
+                            vm.saveBowelMovement(context, selectedScale!!, notes.trim(), eventTime)
                             saved = true
                         }
                     },

@@ -21,19 +21,22 @@ class MealViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val dao = db.eventDao()
 
-    fun saveMeal(context: Context, photoFile: File?, tags: List<String>) {
+    fun saveMeal(context: Context, photoFile: File?, tags: List<String>, eventTime: LocalDateTime? = null) {
         viewModelScope.launch {
-            val now = LocalDateTime.now()
-            val isoNow = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val createdTime = LocalDateTime.now()
+            val actualTime = eventTime ?: createdTime
+            
+            val isoCreated = createdTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val isoEvent = actualTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             val id = UUID.randomUUID().toString().take(8)
 
             val payload = JSONObject().apply {
                 put("type", "meal")
-                put("created_at_utc", isoNow)
-                put("local_datetime", isoNow)
+                put("created_at_utc", isoCreated)
+                put("local_datetime", isoEvent)
                 put("tags", org.json.JSONArray(tags))
                 put("notes", "")
-                put("meal_type_inferred", inferMealType(now.hour))
+                put("meal_type_inferred", inferMealType(actualTime.hour))
                 
                 if (photoFile != null && photoFile.exists()) {
                     val finalFile = File(context.filesDir, "${id}.jpg")
@@ -45,8 +48,8 @@ class MealViewModel(application: Application) : AndroidViewModel(application) {
             val event = EventEntity(
                 id = id,
                 type = "meal",
-                createdAtUtc = isoNow,
-                localDatetime = isoNow,
+                createdAtUtc = isoCreated,
+                localDatetime = isoEvent,
                 payloadJson = payload.toString(),
                 syncStatus = "pending"
             )

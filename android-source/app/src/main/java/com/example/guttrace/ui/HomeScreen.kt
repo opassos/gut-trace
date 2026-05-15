@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 fun HomeScreen(navController: NavController, vm: HomeViewModel = viewModel()) {
     val context = LocalContext.current
     val recentEvents by vm.recentEvents.collectAsState(initial = emptyList())
+    val isServerUp by vm.serverStatus.collectAsState()
 
     Box(
         modifier = Modifier
@@ -73,11 +74,19 @@ fun HomeScreen(navController: NavController, vm: HomeViewModel = viewModel()) {
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
-                IconButton(
-                    onClick = { navController.navigate("settings") },
-                    modifier = Modifier.align(Alignment.TopEnd)
+                Row(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.Settings, contentDescription = "Configurações", tint = Color(0xFF888899))
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(if (isServerUp) Color(0xFF4CAF50) else Color(0xFFFF6B6B))
+                    )
+                    IconButton(onClick = { navController.navigate("settings") }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Configurações", tint = Color(0xFF888899))
+                    }
                 }
             }
 
@@ -188,6 +197,7 @@ fun BigActionButton(
 @Composable
 fun EventRowCard(event: EventEntity, onDelete: () -> Unit) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showDetailsDialog by remember { mutableStateOf(false) }
 
     val emoji = when (event.type) {
         "meal" -> "🍽️"
@@ -203,11 +213,21 @@ fun EventRowCard(event: EventEntity, onDelete: () -> Unit) {
         "bowel" -> "Evacuação"
         else -> "Evento"
     }
-    val time = event.localDatetime.takeLast(14).take(5) // HH:mm
+    val formattedTime = try {
+        val dt = java.time.LocalDateTime.parse(event.localDatetime, java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        val isToday = dt.toLocalDate() == java.time.LocalDate.now()
+        if (isToday) {
+            "Hoje, ${dt.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))}"
+        } else {
+            dt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM HH:mm"))
+        }
+    } catch (e: Exception) {
+        event.localDatetime.take(16).replace("T", " ")
+    }
     val synced = event.syncStatus == "synced"
 
     Surface(
-        modifier = Modifier.fillMaxWidth().clickable { showDeleteDialog = true },
+        modifier = Modifier.fillMaxWidth().clickable { showDetailsDialog = true },
         shape = RoundedCornerShape(12.dp),
         color = Color(0xFF1E1E35)
     ) {
@@ -219,7 +239,7 @@ fun EventRowCard(event: EventEntity, onDelete: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(typeLabel, color = Color.White, fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                Text(time, color = Color(0xFF888899), fontSize = 12.sp)
+                Text(formattedTime, color = Color(0xFF888899), fontSize = 12.sp)
             }
             Box(
                 modifier = Modifier
@@ -228,6 +248,49 @@ fun EventRowCard(event: EventEntity, onDelete: () -> Unit) {
                     .background(if (synced) Color(0xFF4CAF50) else Color(0xFFFF9800))
             )
         }
+    }
+
+    if (showDetailsDialog) {
+        val payloadObj = try { org.json.JSONObject(event.payloadJson) } catch (e: Exception) { org.json.JSONObject() }
+        AlertDialog(
+            onDismissRequest = { showDetailsDialog = false },
+            title = { Text("$emoji $typeLabel") },
+            text = {
+                Column {
+                    Text("Horário: $formattedTime", color = Color(0xFF888899), fontSize = 14.sp)
+                    Spacer(Modifier.height(12.dp))
+                    
+                    val keys = payloadObj.keys()
+                    while (keys.hasNext()) {
+                        val key = keys.next()
+                        if (key !in listOf("type", "id", "created_at_utc", "local_datetime", "photo_ids", "trigger_type", "meal_type_inferred")) {
+                            val value = payloadObj.get(key)
+                            val displayValue = if (value is org.json.JSONArray) {
+                                val list = mutableListOf<String>()
+                                for (i in 0 until value.length()) list.add(value.getString(i))
+                                list.joinToString(", ")
+                            } else {
+                                value.toString()
+                            }
+                            if (displayValue.isNotBlank() && displayValue != "0") {
+                                val friendlyKey = key.replace("_", " ").replaceFirstChar { it.uppercase() }
+                                Text("$friendlyKey: $displayValue", fontSize = 14.sp, color = Color.White)
+                                Spacer(Modifier.height(4.dp))
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDetailsDialog = false
+                    showDeleteDialog = true
+                }) { Text("Excluir", color = Color(0xFFFF6B6B)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDetailsDialog = false }) { Text("Fechar") }
+            }
+        )
     }
 
     if (showDeleteDialog) {

@@ -19,16 +19,19 @@ class BowelViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val dao = db.eventDao()
 
-    fun saveBowelMovement(context: Context, bristolScale: Int, notes: String) {
+    fun saveBowelMovement(context: Context, bristolScale: Int, notes: String, eventTime: LocalDateTime? = null) {
         viewModelScope.launch {
-            val now = LocalDateTime.now()
-            val isoNow = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val createdTime = LocalDateTime.now()
+            val actualTime = eventTime ?: createdTime
+            
+            val isoCreated = createdTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val isoEvent = actualTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             val id = UUID.randomUUID().toString().take(8)
 
             val payload = JSONObject().apply {
                 put("type", "bowel")
-                put("created_at_utc", isoNow)
-                put("local_datetime", isoNow)
+                put("created_at_utc", isoCreated)
+                put("local_datetime", isoEvent)
                 put("bristol_scale", bristolScale)
                 put("notes", notes)
             }
@@ -36,8 +39,8 @@ class BowelViewModel(application: Application) : AndroidViewModel(application) {
             val event = EventEntity(
                 id = id,
                 type = "bowel",
-                createdAtUtc = isoNow,
-                localDatetime = isoNow,
+                createdAtUtc = isoCreated,
+                localDatetime = isoEvent,
                 payloadJson = payload.toString(),
                 syncStatus = "pending"
             )

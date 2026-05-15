@@ -61,6 +61,7 @@ fun MealLogScreen(navController: NavController, vm: MealViewModel = viewModel())
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     val selectedTags = remember { mutableStateListOf<String>() }
     var saved by remember { mutableStateOf(false) }
+    var eventTime by remember { mutableStateOf(java.time.LocalDateTime.now()) }
 
     // Create a temp file for CameraX
     val photoFile = remember { File(context.cacheDir, "meal_${System.currentTimeMillis()}.jpg") }
@@ -107,6 +108,12 @@ fun MealLogScreen(navController: NavController, vm: MealViewModel = viewModel())
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
             ) {
+                DateTimeSelector(
+                    selectedDateTime = eventTime,
+                    onDateTimeSelected = { eventTime = it }
+                )
+                Spacer(Modifier.height(16.dp))
+
                 // Photo area
                 if (photoUri != null) {
                     AsyncImage(
@@ -242,7 +249,8 @@ fun MealLogScreen(navController: NavController, vm: MealViewModel = viewModel())
                         vm.saveMeal(
                             context = context,
                             photoFile = if (photoUri != null) photoFile else null,
-                            tags = selectedTags.toList()
+                            tags = selectedTags.toList(),
+                            eventTime = eventTime
                         )
                         saved = true
                     },

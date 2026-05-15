@@ -40,6 +40,7 @@ fun MedicationScreen(navController: NavController, vm: MedicationViewModel = vie
     var showAddDialog by remember { mutableStateOf(false) }
     var newAlias by remember { mutableStateOf("") }
     var newGeneric by remember { mutableStateOf("") }
+    var eventTime by remember { mutableStateOf(java.time.LocalDateTime.now()) }
 
     val customMedsSet = prefs.getStringSet("custom_meds", emptySet()) ?: emptySet()
     val dynamicMeds = remember {
@@ -64,13 +65,20 @@ fun MedicationScreen(navController: NavController, vm: MedicationViewModel = vie
                 }
                 Text("Registrar Remédio", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
             }
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
+            
+            DateTimeSelector(
+                selectedDateTime = eventTime,
+                onDateTimeSelected = { eventTime = it }
+            )
+            
+            Spacer(Modifier.height(16.dp))
 
             LazyColumn(Modifier.weight(1f)) {
                 items(dynamicMeds) { med ->
                     Button(
                         onClick = {
-                            vm.saveMedication(context, med.second, med.first)
+                            vm.saveMedication(context, med.second, med.first, eventTime)
                             navController.popBackStack()
                         },
                         modifier = Modifier.fillMaxWidth().height(70.dp).padding(bottom = 12.dp),

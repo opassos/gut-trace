@@ -57,6 +57,10 @@ async def sync_events(events: List[Dict[str, Any]]):
     save_events(events)
     return {"status": "success", "count": len(events)}
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 
 @app.post("/sync/photos")
 async def sync_photos(file: UploadFile = File(...), photo_id: str = Form(...)):

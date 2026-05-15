@@ -44,7 +44,7 @@ def save_events(events):
 def get_all_events():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('SELECT payload FROM events ORDER BY created_at DESC')
+    cursor.execute("SELECT payload FROM events ORDER BY COALESCE(json_extract(payload, '$.local_datetime'), created_at) DESC")
     rows = cursor.fetchall()
     conn.close()
     return [json.loads(row[0]) for row in rows]

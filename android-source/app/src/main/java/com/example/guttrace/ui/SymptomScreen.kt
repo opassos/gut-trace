@@ -27,6 +27,7 @@ fun SymptomScreen(navController: NavController, vm: SymptomViewModel = viewModel
     val context = LocalContext.current
     var globalScore by remember { mutableStateOf(-1) }
     var saved by remember { mutableStateOf(false) }
+    var eventTime by remember { mutableStateOf(java.time.LocalDateTime.now()) }
 
     val scoreOptions = listOf(
         0 to ("👍" to "Ótimo"),
@@ -56,6 +57,13 @@ fun SymptomScreen(navController: NavController, vm: SymptomViewModel = viewModel
                 }
                 Text("Como você está?", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
             }
+
+            Spacer(Modifier.height(24.dp))
+            
+            DateTimeSelector(
+                selectedDateTime = eventTime,
+                onDateTimeSelected = { eventTime = it }
+            )
 
             Spacer(Modifier.height(24.dp))
 
@@ -120,7 +128,8 @@ fun SymptomScreen(navController: NavController, vm: SymptomViewModel = viewModel
                             bloating = bloating,
                             nausea = nausea,
                             belching = belching,
-                            heartburn = heartburn
+                            heartburn = heartburn,
+                            eventTime = eventTime
                         )
                         saved = true
                     },
