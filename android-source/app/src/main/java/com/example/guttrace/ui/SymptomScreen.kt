@@ -43,6 +43,7 @@ fun SymptomScreen(navController: NavController, vm: SymptomViewModel = viewModel
     var nausea by remember { mutableStateOf(0) }
     var belching by remember { mutableStateOf(0) }
     var heartburn by remember { mutableStateOf(0) }
+    var bellyAche by remember { mutableStateOf(0) }
 
     Box(
         modifier = Modifier
@@ -114,6 +115,7 @@ fun SymptomScreen(navController: NavController, vm: SymptomViewModel = viewModel
                 SymptomSlider("🤢 Náusea", nausea) { nausea = it }
                 SymptomSlider("💨 Arrotos", belching) { belching = it }
                 SymptomSlider("🔥 Queimação", heartburn) { heartburn = it }
+                SymptomSlider("🚽 Dor de Barriga", bellyAche) { bellyAche = it }
             }
 
             Spacer(Modifier.weight(1f))
@@ -129,6 +131,7 @@ fun SymptomScreen(navController: NavController, vm: SymptomViewModel = viewModel
                             nausea = nausea,
                             belching = belching,
                             heartburn = heartburn,
+                            bellyAche = bellyAche,
                             eventTime = eventTime
                         )
                         saved = true

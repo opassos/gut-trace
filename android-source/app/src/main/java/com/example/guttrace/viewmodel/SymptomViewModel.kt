@@ -27,6 +27,7 @@ class SymptomViewModel(application: Application) : AndroidViewModel(application)
         nausea: Int,
         belching: Int,
         heartburn: Int,
+        bellyAche: Int,
         eventTime: LocalDateTime? = null
     ) {
         viewModelScope.launch {
@@ -47,6 +48,7 @@ class SymptomViewModel(application: Application) : AndroidViewModel(application)
                 put("nausea_score", nausea)
                 put("belching_score", belching)
                 put("heartburn_score", heartburn)
+                put("belly_ache_score", bellyAche)
             }
 
             val event = EventEntity(

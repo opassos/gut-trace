@@ -86,7 +86,7 @@ async def dashboard():
             cards += f'<div class="card"><div class="event-time">{t}</div><h3>🍽️ Meal</h3>{photos_html}<div style="margin-top:8px">{tags_html}</div></div>'
         elif etype == "symptom":
             syms = []
-            for label, key in [("Bloating", "upper_bloating_score"), ("Nausea", "nausea_score"), ("Belching", "belching_score"), ("Heartburn", "heartburn_score")]:
+            for label, key in [("Bloating", "upper_bloating_score"), ("Nausea", "nausea_score"), ("Belching", "belching_score"), ("Heartburn", "heartburn_score"), ("Belly ache", "belly_ache_score")]:
                 v = event.get(key)
                 if v:
                     syms.append(f'<span class="symptom">{label}: {html.escape(str(v))}/5</span>')
@@ -124,7 +124,7 @@ async def heatmap():
                     dt = datetime.fromisoformat(s[:19])
                     day = dt.strftime("%Y-%m-%d")
                     idx = dt.hour // 3
-                    scores = [int(event.get(k, 0) or 0) for k in ("upper_bloating_score", "nausea_score", "belching_score", "heartburn_score")]
+                    scores = [int(event.get(k, 0) or 0) for k in ("upper_bloating_score", "nausea_score", "belching_score", "heartburn_score", "belly_ache_score")]
                     raw.setdefault(day, [0]*8)
                     raw[day][idx] = max(raw[day][idx], max(scores))
                 except (ValueError, IndexError):
@@ -201,7 +201,7 @@ async def export_csv():
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["id", "type", "created_at_utc", "local_datetime", "tags", "meal_notes",
-                     "upper_bloating_score", "nausea_score", "belching_score", "heartburn_score", "symptom_notes"])
+                     "upper_bloating_score", "nausea_score", "belching_score", "heartburn_score", "belly_ache_score", "symptom_notes"])
     for event in events:
         tags = event.get("tags", [])
         tags_str = ",".join(tags) if isinstance(tags, list) else str(tags)
@@ -210,7 +210,7 @@ async def export_csv():
             event.get("local_datetime", ""), tags_str,
             event.get("notes", "") if event.get("type") == "meal" else "",
             event.get("upper_bloating_score", ""), event.get("nausea_score", ""),
-            event.get("belching_score", ""), event.get("heartburn_score", ""),
+            event.get("belching_score", ""), event.get("heartburn_score", ""), event.get("belly_ache_score", ""),
             event.get("notes", "") if event.get("type") == "symptom" else ""
         ])
     response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
