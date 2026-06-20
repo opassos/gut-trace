@@ -40,7 +40,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             while (true) {
                 val prefs = context.getSharedPreferences("gut_prefs", android.content.Context.MODE_PRIVATE)
-                val serverIp = prefs.getString("server_ip", "10.0.2.2") ?: "10.0.2.2"
+                val serverIp = prefs.getString("server_ip", "192.168.0.200") ?: "192.168.0.200"
                 _serverStatus.value = checkServerHealth(serverIp)
                 delay(5000) // Poll every 5 seconds
             }

@@ -17,7 +17,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) :
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val prefs = applicationContext.getSharedPreferences("gut_prefs", Context.MODE_PRIVATE)
-        val serverIp = prefs.getString("server_ip", "10.0.2.2") ?: "10.0.2.2"
+        val serverIp = prefs.getString("server_ip", "192.168.0.200") ?: "192.168.0.200"
         val dynamicServerUrl = "http://$serverIp:8000/sync/events"
 
         val database = AppDatabase.getDatabase(applicationContext)

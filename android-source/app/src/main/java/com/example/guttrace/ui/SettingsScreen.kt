@@ -24,7 +24,7 @@ import androidx.navigation.NavController
 fun SettingsScreen(navController: NavController) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("gut_prefs", Context.MODE_PRIVATE) }
-    var serverIp by remember { mutableStateOf(prefs.getString("server_ip", "10.0.2.2") ?: "10.0.2.2") }
+    var serverIp by remember { mutableStateOf(prefs.getString("server_ip", "192.168.0.200") ?: "192.168.0.200") }
 
     Box(
         modifier = Modifier
@@ -54,7 +54,7 @@ fun SettingsScreen(navController: NavController) {
                     unfocusedBorderColor = Color(0xFF1E1E35),
                     cursorColor = Color(0xFF7C83FD)
                 ),
-                placeholder = { Text("ex: 192.168.0.6", color = Color(0xFF444455)) }
+                placeholder = { Text("ex: 192.168.0.200", color = Color(0xFF444455)) }
             )
             
             Text(
